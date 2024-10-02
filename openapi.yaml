@@ -1,0 +1,90 @@
+openapi: 3.0.2
+info:
+  title: Payments API
+  description: API para validação de pagamentos
+  version: 1.0.0
+servers:
+  - url: /api/v1
+tags:
+  - name: payments
+    description: Operações relacionadas a pagamentos
+paths:
+  /payment/validate:
+    post:
+      tags:
+        - payments
+      summary: Valida se o valor de pagamento é igual, maior ou menor que o valor da cobrança original
+      parameters:
+        - in: header
+          name: idempotenceKey
+          required: true
+          schema:
+            type: string
+          description: Chave de idempotência para evitar processamento duplicado
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentValidationRequest'
+      responses:
+        '200':
+          description: Sucesso na validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erro interno na requisição
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    PaymentValidationRequest:
+      type: object
+      properties:
+        sellerId:
+          type: integer
+          example: 1245
+        payments:
+          type: array
+          items:
+            type: object
+            properties:
+              invoiceId:
+                type: integer
+                example: 123
+              amount:
+                type: number
+                format: float
+                example: 456.55
+      required:
+        - sellerId
+        - payments
+    SuccessResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        description:
+          type: string
+          example: "Validação realizada com sucesso"
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 400
+        description:
+          type: string
+          example: "Erro de validação: valores inconsistentes"
